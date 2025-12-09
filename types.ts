@@ -4,6 +4,11 @@ export interface TimeState {
   adjustmentMinutes: number;
 }
 
+export interface TimeResponse {
+  now: Date;
+  source: string;
+}
+
 export interface CalculationResult {
   // The objective, real-world times
   actualStandardLogout: Date | null;

@@ -19,6 +19,7 @@ const App: React.FC = () => {
 
   // Internet Time Sync State
   const [timeOffset, setTimeOffset] = useState<number | null>(null);
+  const [timeSource, setTimeSource] = useState<string>('Offline');
   const [isLoadingTime, setIsLoadingTime] = useState<boolean>(false);
   const [timeError, setTimeError] = useState<string | null>(null);
 
@@ -46,13 +47,17 @@ const App: React.FC = () => {
     setIsLoadingTime(true);
     setTimeError(null);
     try {
-      const serverDate = await fetchInternetTime();
+      // Now returns { now: Date, source: string }
+      const { now, source } = await fetchInternetTime();
       const deviceNow = Date.now();
-      const offset = serverDate.getTime() - deviceNow;
+      const offset = now.getTime() - deviceNow;
+      
       setTimeOffset(offset);
+      setTimeSource(source);
     } catch (err) {
       setTimeError('Could not sync time');
       setTimeOffset(null);
+      setTimeSource('Offline');
     } finally {
       setIsLoadingTime(false);
     }
@@ -112,7 +117,7 @@ const App: React.FC = () => {
       </main>
       
       <footer className="mt-16 text-center text-slate-400 text-sm">
-        <p>© {new Date().getFullYear()} Smart Workday Calculator. Internet Time Synced via GitHub.</p>
+        <p>© {new Date().getFullYear()} Smart Workday Calculator. Internet Time Synced via {timeSource}.</p>
       </footer>
     </div>
   );
