@@ -1,0 +1,5 @@
+{
+  "name": "Smart Workday Calculator",
+  "description": "A professional time tracking tool that calculates exact logout times based on arrival, fixed work duration, and dynamic adjustments, utilizing verified internet time sources.",
+  "requestFramePermissions": []
+}
