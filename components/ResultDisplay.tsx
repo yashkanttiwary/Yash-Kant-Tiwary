@@ -9,9 +9,16 @@ interface ResultDisplayProps {
   timeOffset: number | null;
   arrivalTime: string;
   manualOffset: number;
+  workDurationLabel: string;
 }
 
-export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, timeOffset, arrivalTime, manualOffset }) => {
+export const ResultDisplay: React.FC<ResultDisplayProps> = ({ 
+  result, 
+  timeOffset, 
+  arrivalTime, 
+  manualOffset,
+  workDurationLabel
+}) => {
   const { 
     userClockAdjustedLogout, 
     actualAdjustedLogout,
@@ -129,7 +136,7 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ result, timeOffset
            </div>
            <div className="text-right">
              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-               Standard (8.5h)
+               Standard ({workDurationLabel})
              </div>
              <div className="text-xl font-bold text-slate-500 dark:text-slate-400">
                 {actualStandardLogout ? formatDisplayTime(actualStandardLogout) : '--:--'}

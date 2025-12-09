@@ -3,6 +3,11 @@ import { TimeResponse } from '../types';
 
 const SOURCES = [
   { 
+    name: 'Adafruit IO', 
+    url: 'https://io.adafruit.com/api/v2/time/ISO-8601',
+    type: 'adafruit'
+  },
+  { 
     name: 'TimeAPI.io', 
     url: 'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
     type: 'timeapi'
@@ -11,11 +16,6 @@ const SOURCES = [
     name: 'WorldTimeAPI', 
     url: 'https://worldtimeapi.org/api/timezone/Etc/UTC',
     type: 'worldtime'
-  },
-  {
-    name: 'Jsontest.com',
-    url: 'http://date.jsontest.com/',
-    type: 'jsontest'
   }
 ];
 
@@ -46,22 +46,26 @@ export const fetchInternetTime = async (): Promise<TimeResponse> => {
       const response = await fetchWithTimeout(source.url);
       if (!response.ok) throw new Error(`${source.name} returned ${response.status}`);
       
-      const data = await response.json();
       let date: Date | null = null;
 
-      // Parser logic based on API type
-      if (source.type === 'timeapi') {
-        let dateStr = data.dateTime;
-        // Fix missing Z if necessary
-        if (typeof dateStr === 'string' && !dateStr.endsWith('Z')) {
-            dateStr += 'Z';
+      if (source.type === 'adafruit') {
+        // Adafruit returns raw text: 2023-10-27T10:00:00Z
+        const text = await response.text();
+        const cleanText = text.replace(/"/g, '').trim();
+        date = new Date(cleanText);
+      } else {
+        const data = await response.json();
+        
+        if (source.type === 'timeapi') {
+          let dateStr = data.dateTime;
+          // Fix missing Z if necessary (TimeAPI sometimes omits it for UTC queries)
+          if (typeof dateStr === 'string' && !dateStr.endsWith('Z')) {
+              dateStr += 'Z';
+          }
+          date = new Date(dateStr);
+        } else if (source.type === 'worldtime') {
+          date = new Date(data.datetime);
         }
-        date = new Date(dateStr);
-      } else if (source.type === 'worldtime') {
-        date = new Date(data.datetime);
-      } else if (source.type === 'jsontest') {
-        // Returns milliseconds_since_epoch
-        date = new Date(data.milliseconds_since_epoch);
       }
 
       if (date && !isNaN(date.getTime())) {

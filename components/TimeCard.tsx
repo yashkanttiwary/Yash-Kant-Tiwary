@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Wifi, RefreshCw, AlertCircle, Clock, Settings, HelpCircle } from 'lucide-react';
+import { Wifi, RefreshCw, AlertCircle, Clock, Settings, HelpCircle, Briefcase } from 'lucide-react';
 import { formatTimeForInput } from '../utils/timeUtils';
 
 const LiveClock = ({ offset }: { offset: number | null }) => {
@@ -36,6 +36,10 @@ interface TimeCardProps {
   isLoadingTime: boolean;
   timeError: string | null;
   refreshTime: () => void;
+  workHours: number;
+  setWorkHours: (h: number) => void;
+  workMinutes: number;
+  setWorkMinutes: (m: number) => void;
 }
 
 export const TimeCard: React.FC<TimeCardProps> = React.memo(({
@@ -49,6 +53,10 @@ export const TimeCard: React.FC<TimeCardProps> = React.memo(({
   isLoadingTime,
   timeError,
   refreshTime,
+  workHours,
+  setWorkHours,
+  workMinutes,
+  setWorkMinutes
 }) => {
   
   const [showOffsetControls, setShowOffsetControls] = useState(false);
@@ -132,6 +140,47 @@ export const TimeCard: React.FC<TimeCardProps> = React.memo(({
               Actual Internet Time: <LiveClock offset={timeOffset} />
             </span>
           )}
+        </div>
+      </div>
+
+      <div className="h-px bg-slate-100 dark:bg-slate-700"></div>
+
+      {/* Shift Duration Section (NEW) */}
+      <div className="space-y-3 relative z-10">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
+          <Briefcase className="w-4 h-4" />
+          <span>Shift Duration</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="relative">
+            <label className="text-[10px] uppercase text-slate-400 font-bold absolute top-2 left-3">Hours</label>
+            <input
+              type="number"
+              min="0"
+              max="24"
+              value={workHours}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                setWorkHours(isNaN(val) ? 0 : Math.min(24, Math.max(0, val)));
+              }}
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xl font-bold rounded-xl pt-6 pb-2 px-3 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 focus:border-primary-500 outline-none transition-all text-center"
+            />
+          </div>
+          <div className="relative">
+             <label className="text-[10px] uppercase text-slate-400 font-bold absolute top-2 left-3">Minutes</label>
+             <input
+              type="number"
+              min="0"
+              max="59"
+              value={workMinutes}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                setWorkMinutes(isNaN(val) ? 0 : Math.min(59, Math.max(0, val)));
+              }}
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xl font-bold rounded-xl pt-6 pb-2 px-3 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900/30 focus:border-primary-500 outline-none transition-all text-center"
+            />
+          </div>
         </div>
       </div>
 

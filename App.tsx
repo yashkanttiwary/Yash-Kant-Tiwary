@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { TimeCard } from './components/TimeCard';
 import { ResultDisplay } from './components/ResultDisplay';
 import { fetchInternetTime } from './services/timeService';
-import { calculateLogoutTimes } from './utils/timeUtils';
+import { calculateLogoutTimes, DEFAULT_WORK_HOURS, DEFAULT_WORK_MINUTES } from './utils/timeUtils';
 import { Theme } from './types';
 
 const App: React.FC = () => {
@@ -12,6 +12,10 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>('light');
   const [arrivalTime, setArrivalTime] = useState<string>('');
   const [adjustmentMinutes, setAdjustmentMinutes] = useState<number>(0);
+  
+  // Shift Duration State (Default 8h 30m)
+  const [workHours, setWorkHours] = useState<number>(DEFAULT_WORK_HOURS);
+  const [workMinutes, setWorkMinutes] = useState<number>(DEFAULT_WORK_MINUTES);
   
   // User Manual Clock Offset (in minutes)
   // Positive = User clock is Fast (Ahead). Negative = User clock is Slow (Behind).
@@ -72,11 +76,16 @@ const App: React.FC = () => {
   
   const referenceDate = useMemo(() => {
     return new Date(Date.now() + (timeOffset || 0));
-  }, [timeOffset, arrivalTime, adjustmentMinutes, manualOffset]); 
+  }, [timeOffset, arrivalTime, adjustmentMinutes, manualOffset, workHours, workMinutes]); 
 
+  // Calculate total minutes for the current shift duration config
+  const totalWorkMinutes = useMemo(() => workHours * 60 + workMinutes, [workHours, workMinutes]);
+  
   const calculationResult = useMemo(() => 
-    calculateLogoutTimes(arrivalTime, adjustmentMinutes, manualOffset, referenceDate), 
-  [arrivalTime, adjustmentMinutes, manualOffset, referenceDate]);
+    calculateLogoutTimes(arrivalTime, adjustmentMinutes, manualOffset, totalWorkMinutes, referenceDate), 
+  [arrivalTime, adjustmentMinutes, manualOffset, totalWorkMinutes, referenceDate]);
+
+  const workDurationLabel = `${workHours}h${workMinutes > 0 ? ` ${workMinutes}m` : ''}`;
 
   // --- Handlers ---
 
@@ -102,6 +111,10 @@ const App: React.FC = () => {
             isLoadingTime={isLoadingTime}
             timeError={timeError}
             refreshTime={syncTime}
+            workHours={workHours}
+            setWorkHours={setWorkHours}
+            workMinutes={workMinutes}
+            setWorkMinutes={setWorkMinutes}
           />
         </div>
 
@@ -112,6 +125,7 @@ const App: React.FC = () => {
             timeOffset={timeOffset}
             arrivalTime={arrivalTime}
             manualOffset={manualOffset}
+            workDurationLabel={workDurationLabel}
           />
         </div>
       </main>

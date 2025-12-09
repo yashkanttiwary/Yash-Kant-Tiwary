@@ -1,9 +1,9 @@
 
 import { CalculationResult } from '../types';
 
-export const WORK_DURATION_HOURS = 8;
-export const WORK_DURATION_MINUTES = 30;
-export const TOTAL_WORK_MINUTES = WORK_DURATION_HOURS * 60 + WORK_DURATION_MINUTES;
+export const DEFAULT_WORK_HOURS = 8;
+export const DEFAULT_WORK_MINUTES = 30;
+export const DEFAULT_TOTAL_WORK_MINUTES = DEFAULT_WORK_HOURS * 60 + DEFAULT_WORK_MINUTES;
 
 /**
  * Parses a "HH:mm" string into a Date object.
@@ -62,7 +62,7 @@ export const formatDisplayTime = (date: Date): string => {
 };
 
 /**
- * Calculates the logout times based on arrival, adjustment, and manual clock offset.
+ * Calculates the logout times based on arrival, adjustment, manual clock offset, AND shift duration.
  * 
  * Logic:
  * User Input Time - Manual Offset = ACTUAL Arrival Time
@@ -71,11 +71,13 @@ export const formatDisplayTime = (date: Date): string => {
  * 
  * @param referenceDate The "current" time context (e.g. Internet Time).
  * @param manualOffsetMinutes The minutes the user's clock is AHEAD (positive) or BEHIND (negative).
+ * @param workDurationMinutes The total length of the shift in minutes.
  */
 export const calculateLogoutTimes = (
   arrivalTimeStr: string,
   adjustmentMinutes: number,
   manualOffsetMinutes: number,
+  workDurationMinutes: number,
   referenceDate: Date = new Date()
 ): CalculationResult => {
   if (!arrivalTimeStr) {
@@ -84,7 +86,7 @@ export const calculateLogoutTimes = (
       actualAdjustedLogout: null,
       userClockStandardLogout: null,
       userClockAdjustedLogout: null,
-      totalDurationMinutes: TOTAL_WORK_MINUTES + adjustmentMinutes,
+      totalDurationMinutes: workDurationMinutes + adjustmentMinutes,
       isNextDayStandard: false,
       isNextDayAdjusted: false,
     };
@@ -99,7 +101,7 @@ export const calculateLogoutTimes = (
   const actualArrival = new Date(userClockArrival.getTime() - (manualOffsetMinutes * 60000));
   
   // 3. Calculate ACTUAL Logout Times
-  const actualStandardLogout = new Date(actualArrival.getTime() + TOTAL_WORK_MINUTES * 60000);
+  const actualStandardLogout = new Date(actualArrival.getTime() + workDurationMinutes * 60000);
   const actualAdjustedLogout = new Date(actualStandardLogout.getTime() + adjustmentMinutes * 60000);
 
   // 4. Calculate USER CLOCK Logout Times (Actual + Offset)
@@ -112,7 +114,7 @@ export const calculateLogoutTimes = (
     actualAdjustedLogout,
     userClockStandardLogout,
     userClockAdjustedLogout,
-    totalDurationMinutes: TOTAL_WORK_MINUTES + adjustmentMinutes,
+    totalDurationMinutes: workDurationMinutes + adjustmentMinutes,
     isNextDayStandard: actualStandardLogout.getDate() !== actualArrival.getDate(),
     isNextDayAdjusted: actualAdjustedLogout.getDate() !== actualArrival.getDate(),
   };
