@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { CalculationResult } from '../types';
 import { formatDisplayTime, calculateProgress } from '../utils/timeUtils';
 import { LogOut, ArrowRight, Hourglass, Clock, CheckCircle } from 'lucide-react';
+import { AlarmButton } from './AlarmButton';
 
 interface ResultDisplayProps {
   result: CalculationResult;
@@ -105,19 +106,11 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
             </span>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mt-6">
-             <div className="flex justify-between text-xs font-medium text-primary-200 mb-2">
-               <span>Shift Progress</span>
-               <span>{Math.round(progress)}%</span>
-             </div>
-             <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden">
-               <div 
-                 className="h-full bg-white/90 rounded-full transition-all duration-1000 ease-out"
-                 style={{ width: `${progress}%` }}
-               ></div>
-             </div>
-          </div>
+          {/* Alarm Button */}
+          <AlarmButton 
+            targetDate={userClockAdjustedLogout} 
+            manualOffset={manualOffset}
+          />
         </div>
       </div>
 
@@ -143,13 +136,27 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({
              </div>
            </div>
         </div>
+        
+        {/* Progress Bar moved here for cleaner UI in main card */}
+        <div className="pt-2">
+           <div className="flex justify-between text-xs font-medium text-slate-400 mb-2">
+             <span>Shift Progress</span>
+             <span>{Math.round(progress)}%</span>
+           </div>
+           <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+             <div 
+               className="h-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-1000 ease-out"
+               style={{ width: `${progress}%` }}
+             ></div>
+           </div>
+        </div>
 
         {manualOffset !== 0 ? (
-          <p className="text-xs text-slate-400 text-center">
-            * 'Actual' is the real-world time. 'Your Clock' includes your {manualOffset} min offset.
+          <p className="text-xs text-slate-400 text-center pt-2">
+            * 'Actual' is real-world time. 'Your Clock' includes your {manualOffset} min offset.
           </p>
         ) : (
-          <p className="text-xs text-slate-400 text-center">
+          <p className="text-xs text-slate-400 text-center pt-2">
             Your clock matches actual time.
           </p>
         )}
