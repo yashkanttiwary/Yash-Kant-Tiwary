@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Header } from './components/Header';
-import { TimeCard } from './components/TimeCard';
+import { TimeCard, InputType } from './components/TimeCard';
 import { ResultDisplay } from './components/ResultDisplay';
 import { fetchInternetTime } from './services/timeService';
 import { calculateLogoutTimes, DEFAULT_WORK_HOURS, DEFAULT_WORK_MINUTES } from './utils/timeUtils';
@@ -17,6 +16,9 @@ const App: React.FC = () => {
   const [workHours, setWorkHours] = useState<number>(DEFAULT_WORK_HOURS);
   const [workMinutes, setWorkMinutes] = useState<number>(DEFAULT_WORK_MINUTES);
   
+  // Input Mode: 'actual' (Real World) or 'device' (Modified/Offset)
+  const [inputType, setInputType] = useState<InputType>('actual');
+
   // User Manual Clock Offset (in minutes)
   // Positive = User clock is Fast (Ahead). Negative = User clock is Slow (Behind).
   const [manualOffset, setManualOffset] = useState<number>(0);
@@ -74,16 +76,21 @@ const App: React.FC = () => {
 
   // --- Calculations ---
   
+  // Determine effective offset for calculation
+  // If user says "Actual Time", then their "clock offset" is irrelevant for the arrival calculation (effectively 0).
+  // If user says "Device Time", we use their manual offset.
+  const effectiveOffset = inputType === 'device' ? manualOffset : 0;
+
   const referenceDate = useMemo(() => {
     return new Date(Date.now() + (timeOffset || 0));
-  }, [timeOffset, arrivalTime, adjustmentMinutes, manualOffset, workHours, workMinutes]); 
+  }, [timeOffset, arrivalTime, adjustmentMinutes, effectiveOffset, workHours, workMinutes]); 
 
   // Calculate total minutes for the current shift duration config
   const totalWorkMinutes = useMemo(() => workHours * 60 + workMinutes, [workHours, workMinutes]);
   
   const calculationResult = useMemo(() => 
-    calculateLogoutTimes(arrivalTime, adjustmentMinutes, manualOffset, totalWorkMinutes, referenceDate), 
-  [arrivalTime, adjustmentMinutes, manualOffset, totalWorkMinutes, referenceDate]);
+    calculateLogoutTimes(arrivalTime, adjustmentMinutes, effectiveOffset, totalWorkMinutes, referenceDate), 
+  [arrivalTime, adjustmentMinutes, effectiveOffset, totalWorkMinutes, referenceDate]);
 
   const workDurationLabel = `${workHours}h${workMinutes > 0 ? ` ${workMinutes}m` : ''}`;
 
@@ -115,6 +122,8 @@ const App: React.FC = () => {
             setWorkHours={setWorkHours}
             workMinutes={workMinutes}
             setWorkMinutes={setWorkMinutes}
+            inputType={inputType}
+            setInputType={setInputType}
           />
         </div>
 
@@ -124,7 +133,7 @@ const App: React.FC = () => {
             result={calculationResult} 
             timeOffset={timeOffset}
             arrivalTime={arrivalTime}
-            manualOffset={manualOffset}
+            manualOffset={effectiveOffset}
             workDurationLabel={workDurationLabel}
           />
         </div>
